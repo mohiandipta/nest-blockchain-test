@@ -26,4 +26,10 @@ export class BlockchainService {
 
         return newBlock
     }
+
+    getBlockByIndex(index: number): Block[] {
+        const result = this.blockchain
+        console.log(result)
+        return result
+    }
 }
