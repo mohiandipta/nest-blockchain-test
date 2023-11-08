@@ -1,37 +1,40 @@
 import { Controller, Get, Post, Body, Req, Res, Param } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { BlockchainService } from './blockchain.service';
-import { Block } from './block';
+import { CryptoBlock } from './cryptoblock';
 
 @Controller('blockchain')
 export class BlockchainController {
     constructor(private readonly blockchainService: BlockchainService) { }
 
-    @Get('/')
+    @Post('get-by-index')
     async getBlockchain(
         // @Req() request: Request,
         // @Res() response: Response
-    ): Promise<Block[]> {
+        @Body('index') index: number
+    ) {
         try {
-            return await this.blockchainService.getBlockchain()
+            console.log(index)
+            return await this.blockchainService.getBlockByIndex(index)
         } catch (error) {
             console.log(error)
         }
     }
 
-    @Get('verify/:index/:hash')
+    @Post('verify')
     async verifyHash(
-        @Param('index') index: number,
-        @Param('hash') hash: string
+        @Body() data: {index: number, hash: string}
     ) {
         try {
-            const blockToVerify = await this.blockchainService.getBlockByIndex(index)
+            const blockToVerify = await this.blockchainService.getBlockByIndex(data.index)
+            const previousBlock = await this.blockchainService.getBlockByIndex(data.index - 1)
             // console.log(blockToVerify)
-            if (blockToVerify) {
-                // const calculatedHash = blockToVerify.calculateHash()
-                // console.log(calculatedHash)
-                // return calculatedHash === hash
-            }
+            // if (blockToVerify) {
+            //     const calculatedHash = blockToVerify.calculateHash
+            //     console.log(calculatedHash)
+            //     return calculatedHash === data.hash
+            // }
+            return await this.blockchainService.checkChainValidity(blockToVerify, previousBlock)
         } catch (error) {
             console.log(error)
         }
@@ -42,7 +45,7 @@ export class BlockchainController {
         // @Req() request: Request,
         // @Res() response: Response,
         @Body('data') data: string
-    ): Block {
+    ): CryptoBlock {
         try {
             return this.blockchainService.addBlock(data);
         } catch (error) {
